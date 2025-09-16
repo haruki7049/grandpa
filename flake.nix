@@ -52,22 +52,31 @@
             programs.shfmt.enable = true;
           };
 
-          devShells.default = pkgs.haskellPackages.developPackage {
-            root = ./.;
-            modifier =
-              drv:
-              pkgs.haskell.lib.addBuildTools drv ([
-                # Build tools
-                pkgs.haskellPackages.stack
+          devShells.default =
+            let
+              add-grandpa-buildtools =
+                drv:
+                pkgs.haskell.lib.addBuildTools drv [
+                  # Build tools
+                  pkgs.haskellPackages.stack
 
-                # Linter
-                pkgs.haskellPackages.hlint
+                  # Linter
+                  pkgs.haskellPackages.hlint
 
-                # LSP
-                pkgs.haskellPackages.haskell-language-server
-                pkgs.nil
-              ]);
-          };
+                  # LSP
+                  pkgs.haskellPackages.haskell-language-server
+                  pkgs.nil
+                ];
+              add-grandpa-pkgconfig-depends =
+                drv:
+                pkgs.haskell.lib.addPkgconfigDepends drv [
+                  pkgs.SDL2
+                ];
+            in
+            pkgs.haskellPackages.developPackage {
+              root = ./.;
+              modifier = drv: add-grandpa-buildtools (add-grandpa-pkgconfig-depends drv);
+            };
         };
     };
 }
